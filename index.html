@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0a0a0c;
+            --accent: #3b82f6;
+            --accent-glow: rgba(33, 71, 131, 0.4);
+            --glass-base: rgba(22, 22, 26, 0.2);
+            --glass-edge: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --panel-blur: 32px;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-deep: #f1f5f9;
+                --glass-base: rgba(255, 255, 255, 0.3);
+                --glass-edge: rgba(0, 0, 0, 0.05);
+                --text-main: #0f172a;
+                --text-dim: #64748b;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.01em;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        #sidebar {
+            position: fixed; /* Фиксируем поверх всего */
+            left: 0;
+            top: 0;
+            width: 380px;
+            height: 100vh;
+            background: var(--glass-base);
+            backdrop-filter: blur(var(--panel-blur)) saturate(180%);
+            -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(180%);
+            border-right: 1px solid var(--glass-edge);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000; /* Очень высокий приоритет */
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Плавное скрытие */
+            box-shadow: 20px 0 50px rgba(0,0,0,0.3);
+        }
+
+        #sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .header {
+            padding: 48px 24px 0px;
+            background: linear-gradient(to bottom, #2E2D3366, transparent);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 2px;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* --- CONTROLS --- */
+        .pane {
+            padding: 0 24px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding-left: 4px;
+        }
+
+        input[type="text"] {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-edge);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-size: 13px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        /* --- CHECKBOXES --- */
+        .params-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .checkbox-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-edge);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .checkbox-card:hover {
+            background: rgba(255,255,255,0.07);
+        }
+
+        .checkbox-card input {
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .checkbox-card span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* --- MODEL LIST --- */
+        #list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 24px;
+            scroll-behavior: smooth;
+            mask-image: linear-gradient(to bottom, transparent, black 20px, black calc(100% - 20px), transparent);
+            max-height: 16%;
+        }
+
+        .model-item {
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-item::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; width: 4px; height: 100%;
+            background: var(--accent);
+            transform: scaleY(0);
+            transition: 0.3s;
+        }
+
+        .model-item:hover {
+            background: rgba(255,255,255,0.05);
+            transform: translateX(4px);
+        }
+
+        .model-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .model-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .model-item strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .model-item small {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            display: block;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        /* --- VIEWER --- */
+        #viewer-container {
+            flex: 1;
+            position: absolute;
+            background: #000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #toggle-sidebar {
+            position: fixed;
+            bottom: 70px;
+            right: 30px;
+            z-index: 1100; /* Выше сайдбара */
+            background: var(--glass-base);
+            border: 1px solid var(--glass-edge);
+            backdrop-filter: blur(10px);
+            color: var(--accent);
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 80px;
+            height: 36px;
+        }
+
+        #toggle-sidebar:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+}
+
+        #viewer-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            --poster-color: transparent;
+        }
+
+        /* --- SCROLLBAR --- */
+        #list::-webkit-scrollbar { width: 4px; }
+        #list::-webkit-scrollbar-track { background: transparent; }
+        #list::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+        #list::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+        /* --- STATUS OVERLAY --- */
+        #status-overlay {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 10px 22px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 10px;
+            border: 1px solid var(--glass-edge);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 8px var(--accent-glow);
+            z-index: 200;
+            width: 80px;
+            height: 36px;
+        }
+
+        /* Скроллбар, который не портит glassmorphism */
+        #list::-webkit-scrollbar {
+            width: 4px;
+        }
+        #list::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .ps1-style model-viewer {
+            image-rendering: pixelated !important;
+            image-rendering: crisp-edges !important;
+            /* Усиливаем контраст, чтобы цвета казались более "сырыми" */
+            filter: contrast(1.1) saturate(1.2) brightness(1.1);
+        }
+
+        /* Опционально: добавь легкое дрожание (Jitter), как на настоящей PS-1 */
+        @keyframes ps1-jitter {
+            0% { transform: translate(0,0); }
+            50% { transform: translate(0.5px, 0.5px); }
+            100% { transform: translate(0,0); }
+        }
+
+        .ps1-style {
+            animation: ps1-jitter 0.1s infinite;
+        }
+
+        /* ЭЛТ эффект: Сканирующие линии и мерцание */
+        .crt-effect::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            /* Тонкие горизонтальные полоски */
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Виньетка и легкое свечение для CRT */
+        .crt-effect::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: radial-gradient(circle at center, transparent 50%, rgba(0,0,0,0.4) 100%);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* Анимация мерцания */
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            100% { opacity: 1; }
+        }
+        .crt-flicker {
+            animation: flicker 0.02s infinite;
+        }
+    </style>
+</head>
+<body>
+<div id="sidebar">
+    <div class="header">
+    </div>
+    
+    <div class="pane">
+        <div class="control-group">
+            <label>Registry (JSON)</label>
+            <input type="text" id="gistUrl" spellcheck="false" placeholder="https://...">
+        </div>
+        <div class="control-group">
+            <label>Render Theme Suffix</label>
+            <input type="text" id="themeInput" value="light" spellcheck="false">
+        </div>
+
+        <div class="control-group">
+            <label>Ranking Profile</label>
+            <input type="text" data-key="experimental_ranking_mode_name" value="default-web-ranking">
+        </div>
+
+                <div class="params-grid" id="extraParams">
+            <label>Extra parameters</label>
+            <br>
+            <label class="checkbox-card" title="Enable Metapoi">
+                <input type="checkbox" data-key="experimental_use_metapoi" value="1" checked>
+                <span>METAPOI</span>
+            </label>
+            <label class="checkbox-card" title="Combine Tiles">
+                <input type="checkbox" data-key="experimental_metapoi_combined_tiles" value="true" checked>
+                <span>COMBINED</span>
+            </label>
+        </div>
+    </div>
+    <div>
+        <label style="padding-left: 28px;">Detected Entries</label>
+        <div id="list"></div>
+    </div>
+</div>
+<div id="viewer-container">
+    <model-viewer 
+        id="viewer" 
+        camera-controls 
+        auto-rotate 
+        bounds="tight" 
+        exposure="1"
+        shadow-intensity="1.5" 
+        environment-image="neutral"
+        interaction-prompt="none"
+        power-preference="high-performance"
+        loading="eager"
+        minimum-render-scale="0.5">
+    </model-viewer>
+    <button id="toggle-sidebar">✕ Menu</button>
+    <div id="status-overlay">Ready</div>
+</div>
+
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+<script src="renderer.js"></script>
+</body>
+</html>
