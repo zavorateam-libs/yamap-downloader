@@ -15,8 +15,8 @@
     "electron-builder": "^26.0.12"
   },
   "build": {
-    "appId": "com.yamap.3dpro",
-    "productName": "YaMap 3D Pro",
+    "appId": "ru.zavorateam.yama3dview",
+    "productName": "YaMap 3D Viewer",
     "directories": {
       "output": "dist"
     },

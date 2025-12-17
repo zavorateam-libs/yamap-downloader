@@ -12,8 +12,8 @@
 
 **Для Linux:**
 1. Скачайте файл `.AppImage`
-2. Сделайте его исполняемым: `chmod +x YaMap-3D-Viewer-x.x.x.AppImage`
-3. Запустите двойным кликом или из терминала: `./YaMap-3D-Viewer-x.x.x.AppImage`
+2. Сделайте его исполняемым: `chmod +x YaMap_3DViewer-0.9.7.AppImage`
+3. Запустите двойным кликом или из терминала: `./YaMap_3DViewer-0.9.7.AppImage`
 
 ### Работа с приложением
 
