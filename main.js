@@ -47,12 +47,10 @@ function createWindow() {
         {
             label: 'Визуальные эффекты',
             submenu: [
-                // Передаем 'shader' как действие, а 'none'/'ps1' как значение
                 { label: 'Стандартный', type: 'radio', checked: true, click: () => mainWindow.webContents.send('menu-action', 'shader', 'none') },
                 { label: 'PS1 Retro', type: 'radio', click: () => mainWindow.webContents.send('menu-action', 'shader', 'ps1') },
                 { label: 'CRT Display', type: 'radio', click: () => mainWindow.webContents.send('menu-action', 'shader', 'crt') },
                 { type: 'separator' },
-                // Тут действие 'optimize', значение true/false
                 { label: 'Оптимизация рендера', type: 'checkbox', checked: true, click: (m) => mainWindow.webContents.send('menu-action', 'optimize', m.checked) }
             ]
         }
@@ -90,7 +88,6 @@ ipcMain.handle('fetch-model', async (event, { id, theme, extraParams }) => {
             headers: { 'User-Agent': 'Mozilla/5.0' }
         });
 
-        // Возвращаем объект с буфером. Electron автоматически сериализует Uint8Array
         return {
             buffer: response.data,
             fileName: `${baseId}_${theme}.glb`,
@@ -120,13 +117,12 @@ ipcMain.handle('open-file', async () => {
         filters: [{ name: 'JSON Registry', extensions: ['json'] }]
     });
 
-    // У диалога открытия свойство называется filePaths (массив)
     if (result.canceled || result.filePaths.length === 0) {
         return null; 
     }
 
     try {
-        const filePath = result.filePaths[0]; // Берем первый выбранный файл
+        const filePath = result.filePaths[0];
         const content = fs.readFileSync(filePath, 'utf-8');
         return JSON.parse(content);
     } catch (e) {

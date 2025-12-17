@@ -44,7 +44,6 @@ function renderList(items) {
         div.innerHTML = `<strong>${item.Название || 'Без названия'}</strong><br><small>${item.id}</small>`;
         
         div.onclick = () => {
-            // Визуальное выделение активного элемента
             document.querySelectorAll('.model-item').forEach(el => el.classList.remove('active'));
             div.classList.add('active');
             
@@ -59,8 +58,6 @@ function renderList(items) {
 async function updateModel() {
     if (!currentModelId) return;
     status.innerText = 'Загрузка 3D данных...';
-
-    // Сбор всех параметров с data-key (чекбоксы и текст)
     const extraParams = {};
     document.querySelectorAll('[data-key]').forEach(el => {
         if (el.type === 'checkbox') {
@@ -82,12 +79,9 @@ async function updateModel() {
         if (result && result.buffer) {
             lastBuffer = result.buffer;
             currentFileName = result.fileName;
-
-            // Используем Blob для стабильного отображения
             const blob = new Blob([result.buffer], { type: 'model/gltf-binary' });
             const url = URL.createObjectURL(blob);
-            
-            // Очистка старой памяти
+    
             if (viewer.src && viewer.src.startsWith('blob:')) {
                 URL.revokeObjectURL(viewer.src);
             }
@@ -178,7 +172,7 @@ window.api.onMenuAction(async (action, value) => {
             if (value === 'ps1') {
                 container.classList.add('ps1-style'); 
                 viewer.setAttribute('minimum-render-scale', '0.05');
-                viewer.shadowSoftness = 0; // Отключаем мягкие тени
+                viewer.shadowSoftness = 0;
             } else if (value === 'crt') {
                 container.classList.add('crt-effect', 'crt-flicker');
                 viewer.setAttribute('minimum-render-scale', '1');
@@ -191,7 +185,7 @@ window.api.onMenuAction(async (action, value) => {
     if (action === 'optimize') {
         if (value) {
             viewer.setAttribute('power-preference', 'high-performance');
-            viewer.removeAttribute('interpolation-decay'); // Быстрый отклик
+            viewer.removeAttribute('interpolation-decay');
             setStatus('OPTIMIZATION: ON');
         } else {
             viewer.setAttribute('power-preference', 'default');
