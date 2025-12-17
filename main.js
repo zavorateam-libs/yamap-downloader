@@ -59,7 +59,7 @@ function createWindow() {
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
 
-    mainWindow.loadFile('index.html');
+    mainWindow.loadFile(path.join(__dirname, 'index.html'));
 }
 
 ipcMain.handle('fetch-model', async (event, { id, theme, extraParams }) => {
